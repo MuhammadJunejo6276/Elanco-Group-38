@@ -11,3 +11,4 @@
         <a href="home.php"><img src="logo.png" alt="Logo"></a>
     </div>
 </header>
+</html>
