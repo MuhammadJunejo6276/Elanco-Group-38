@@ -20,6 +20,8 @@ header{
     width: 100vw;
     height: 262px;
     background-color: white;
+    padding: 0;
+    margin: 0;
 }
 
 .headerstripe{
