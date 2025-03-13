@@ -25,9 +25,31 @@ header{
 }
 
 .headerstripe{
+    display:flex;
+    position: relative;
     width: 100vw;
     height: 82px;
     background-color: #1961AA;
     padding: 0;
     margin: 0;
+    align-items: right;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginbutton{
+    font-size: 22px;
+    margin-right: 20px;
+    margin-left: auto;
+    line-height: 45px;
+    float: right;
+    width: 146px;
+    height: 45px;
+    background-color: white;
+    color: #1961AA;
+    text-decoration: none;
+    border-radius: 30px;
+    text-align: center;
+    justify-content: center;
+    align-items: center;   
 }
