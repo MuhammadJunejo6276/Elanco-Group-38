@@ -9,3 +9,23 @@
   height: 190px;
   background-color: white;
 }
+
+.logo{
+    width: 336px;
+    height: 111px;
+    padding: 20px;
+}
+
+header{
+    width: 100vw;
+    height: 262px;
+    background-color: white;
+}
+
+.headerstripe{
+    width: 100vw;
+    height: 82px;
+    background-color: #1961AA;
+    padding: 0;
+    margin: 0;
+}
