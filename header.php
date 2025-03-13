@@ -8,7 +8,16 @@
 </head>
 <header>
     <div class="logo">
-        <a href="index.php"><img src="logo.png" alt="Logo"></a>
-    </div>
+    <?php
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        $logoLink = isset($_SESSION['userId']) ? 'userhome.php' : 'index.php';
+    ?>
+        <a href="<?php echo $logoLink; ?>"><img src="logo.png" alt="Logo"></a>
+    </div>    
+    <?php if (isset($buttonLink) && isset($buttonText) && isset($buttonClass)): ?>
+        <a href="<?php echo $buttonLink; ?>" class="<?php echo $buttonClass; ?>"><?php echo $buttonText; ?></a>
+    <?php endif; ?>
+    <div class="headerstripe"></div>
 </header>
-</html>
