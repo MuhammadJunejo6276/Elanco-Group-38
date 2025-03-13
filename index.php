@@ -1,5 +1,7 @@
 <?php
-session_start();
+$buttonLink = 'login.php';
+$buttonText = 'Log In';
+$buttonClass = 'loginbutton';
 include ('header.php');
 ?>
 
