@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elanco Login</title>
+    <title>Elanco Login Page</title>
     <style>
         * {
             margin: 0;
@@ -88,7 +88,6 @@
     <div class="header">
         <img src="ElancoPics/elancologo.png" alt="Elanco Logo">
     </div>
-
     <div class="login-container">
         <h2>User Login</h2>
         <form method="POST">
