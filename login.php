@@ -61,18 +61,31 @@
             font-size: 16px;
         }
         .footer {
+            background-color: #002a66;
+            padding: 10px;
             position: fixed;
             bottom: 0;
             width: 100%;
-            background: #0057A3;
-            padding: 10px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
         }
         .footer img {
             width: 30px;
-            margin: 5px;
+        }
+        .footer .social-icons {
+            display: flex;
+            gap: 10px;
+        }
+        .footer .rights {
+            flex-grow: 1;
+            text-align: center;
         }
 
+        .footer img {
+            width: 30px;
+        }
     </style>
 </head>
 <body>
@@ -90,9 +103,13 @@
     </div>
 
     <div class="footer">
-        <img src="ElancoPics/fblogo.png" alt="Facebook">
-        <img src="ElancoPics/instalogo.png" alt="Instagram">
-        <img src="ElancoPics/twitterlogo.png" alt="Twitter">
+        <div class="social-icons">
+            <img src="ElancoPics/emailicon.webp" alt="Email">
+            <img src="ElancoPics/fblogo.png" alt="Facebook">
+            <img src="ElancoPics/instalogo.png" alt="Instagram">
+            <img src="ElancoPics/twitterlogo.png" alt="Twitter">
+        </div>
+        <div class="rights">&copy; 2025 Elanco. All rights reserved.</div>
     </div>
 
 </body>
