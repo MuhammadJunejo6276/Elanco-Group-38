@@ -11,14 +11,12 @@
             box-sizing: border-box;
             font-family: Arial, sans-serif;
         }
-
         body {
             background-image: url('ElancoPics/rawImage.jpg');
             background-size: cover;
             background-position: flex;
             background-repeat: no-repeat;
         }
-
         .header {
             background-color: white;
             padding: 10px;
@@ -26,11 +24,9 @@
             display: flex;
             border-bottom: 60px solid #0057A3;
         }
-
         .header img {
             width: 200px;
         }
-
         .login-container {
             position: absolute;
             top: 50%;
@@ -43,12 +39,10 @@
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
             text-align: center;
         }
-
         .login-container h2 {
             margin-bottom: 20px;
             color: #0057A3;
         }
-
         .login-container input {
             width: 100%;
             padding: 10px;
@@ -56,7 +50,6 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-
         .login-container button {
             width: 100%;
             padding: 10px;
@@ -67,7 +60,6 @@
             cursor: pointer;
             font-size: 16px;
         }
-
         .footer {
             position: fixed;
             bottom: 0;
