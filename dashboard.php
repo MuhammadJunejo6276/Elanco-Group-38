@@ -153,7 +153,7 @@
             <a href="temperature.php">Temperature</a>
             <a href="weight.php">Weight</a>
             <a href="food&water.php">Food and Water Intake</a>
-            <a href="calorieburn.php">Calorie Burn</a>
+            <a href="calorie_burn.php">Calorie Burn</a>
             <a href="breathing_rate.php">Breathing Rate</a>
             <a href="behaviour_pattern.php">Behaviour Pattern</a>
             <a href="barking_frequency.php">Barking Frequency</a>
