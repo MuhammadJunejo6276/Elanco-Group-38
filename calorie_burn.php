@@ -40,11 +40,9 @@
             background-color: white;
             color: #0A4A94;
             border: 2px solid #0A4A94;
-            padding: 5px 15px;
-            border-radius: 20px;
+            padding: 5px 12px;
             cursor: pointer;
             font-weight: bold;
-            position: relative;
         }
 
         .profile-button:hover {
@@ -67,7 +65,6 @@
             right: 0;
             background: white;
             border: 1px solid #ccc;
-            border-radius: 10px;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
             width: 180px;
             z-index: 1000;
@@ -95,24 +92,24 @@
         .nav-links {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 5px;
+            flex-wrap: wrap;
         }
 
         .nav-links a {
+            background-color: #0A4A94;
             color: white;
             text-decoration: none;
             font-size: 14px;
             font-weight: bold;
-            position: relative;
+            padding: 6px 10px;
+            border: 1px solid #0A4A94;
+            transition: 0.3s;
         }
 
-        .nav-links a::after {
-            content: "•";
-            color: red;
-            position: absolute;
-            top: -5px;
-            right: -8px;
-            font-size: 16px;
+        .nav-links a:hover {
+            background-color: white;
+            color: #0A4A94;
         }
 
         .footer {
