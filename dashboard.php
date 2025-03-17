@@ -138,7 +138,7 @@
             <img src="ElancoPics/profileicon.png" alt="Profile">
             <button class="profile-button">Profile ▼</button>
             <div class="dropdown" id="profileDropdown">
-                <a href="personal_info.php">Personal Information</a>
+                <a href="personalinfo.php">Personal Information</a>
                 <a href="settings.php">Settings</a>
                 <a href="help.php">Help</a>
                 <a href="logout.php">Logout</a>
