@@ -9,3 +9,4 @@
 <footer>
     <div class="stripe"></div>
 </footer>
+
