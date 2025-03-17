@@ -22,4 +22,3 @@
     <?php endif; ?>
     </div>
 </header>
-
