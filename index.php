@@ -9,7 +9,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color:rgb(46, 51, 98);
+            background-color:rgb(44, 49, 94);
             text-align: center;
         }
         .header {
