@@ -108,13 +108,26 @@
 .footer {
   background-color: #002a66;
   padding: 10px;
-  text-align: center;
   position: fixed;
   bottom: 0;
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+.footer img {
+  width: 30px;
+}
+.footer .social-icons {
+  display: flex;
+  gap: 10px;
+}
+.footer .rights {
+  flex-grow: 1;
+  text-align: center;
 }
 
 .footer img {
   width: 30px;
-  margin: 5px;
 }
