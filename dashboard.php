@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div class="header">
         <img src="ElancoPics/elancologo.png" alt="Elanco Logo">
         <div class="profile-container" onclick="toggleDropdown()">
