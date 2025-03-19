@@ -1,21 +1,17 @@
 <?php
 session_start();
 
-// Ensure user is logged in
 if (!isset($_SESSION['user_id'])) {
     die("User not logged in.");
 }
 
-// Database configuration
-$db_file = "ElancoDatabase.db"; // SQLite database file
+$db_file = "ElancoDatabase.db";
 try {
     $conn = new PDO("sqlite:" . $db_file);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Get current user ID
     $user_id = $_SESSION['user_id'];
 
-    // Get pet information
     $pet_query = $conn->prepare("SELECT PetID, Name FROM Pet WHERE Owner_ID = ?");
     $pet_query->execute([$user_id]);
     $pet_data = $pet_query->fetch(PDO::FETCH_ASSOC);
@@ -24,7 +20,6 @@ try {
         $pet_id = $pet_data['PetID'];
         $pet_name = htmlspecialchars($pet_data['Name'], ENT_QUOTES, 'UTF-8');
 
-        // Get latest activity record from Pet_Activity table
         $activity_query = $conn->prepare("
             SELECT pa.Behaviour_ID, b.Behaviour_Desc 
             FROM Pet_Activity pa
@@ -39,7 +34,6 @@ try {
         if ($activity_data) {
             $current_activity = htmlspecialchars($activity_data['Behaviour_Desc'], ENT_QUOTES, 'UTF-8');
 
-            // Activity images
             $activity_images = [
                 'Normal' => 'ElancoPics/normal.avif',
                 'Sleeping' => 'ElancoPics/sleeping.webp',
@@ -48,11 +42,9 @@ try {
                 'Playing' => 'ElancoPics/playing.jpg'
             ];
 
-            // Display result
             echo "<div class='activity-status'>";
             echo "<p>Your {$pet_name} is currently <strong>{$current_activity}</strong></p>";
 
-            // Show image if available
             if (isset($activity_images[$current_activity])) {
                 echo "<img src='{$activity_images[$current_activity]}' alt='{$current_activity}'>";
             } else {
