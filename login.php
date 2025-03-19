@@ -1,8 +1,7 @@
 <?php
 session_start();
 
-// Database configuration
-$db_file = "ElancoDatabase.db"; // SQLite database file
+$db_file = "ElancoDatabase.db";
 
 try {
     $conn = new PDO("sqlite:" . $db_file);
@@ -10,19 +9,16 @@ try {
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $email = trim($_POST['email']);
-        $password = trim($_POST['password']); // Plain text password
+        $password = trim($_POST['password']);
 
-        // Fetch user from database
         $query = $conn->prepare("SELECT User_ID, F_Name, L_Name, Password FROM Pet_Owners WHERE Email = ?");
         $query->execute([$email]);
         $user = $query->fetch(PDO::FETCH_ASSOC);
 
-        if ($user && $password === $user['Password']) { // Plain text comparison
-            // Store user info in session
+        if ($user && $password === $user['Password']) { 
             $_SESSION['user_id'] = $user['User_ID'];
             $_SESSION['full_name'] = $user['F_Name'] . " " . $user['L_Name'];
 
-            // Redirect to dashboard
             header("Location: current_activity.php");
             exit();
         } else {
