@@ -131,3 +131,9 @@
 .footer img {
   width: 30px;
 }
+
+.graphcontainer{
+ height: calc(100vh*0.8);
+ width: calc(100vw*0.8);
+ padding: 50px;
+}
