@@ -34,7 +34,71 @@
             <a href="barking_frequency.php">Barking Frequency</a>
         </div>
     </nav>
+    
+    <div class="graphcontainer">
+        <main role="main" class="pb-5">
+            <h2>Behaviour Pattern Analysis</h2>
+            <div class="col-md-12">
+                <canvas id="myChart"></canvas>
+            </div>
 
+            <?php
+            try {
+                $conn = new PDO('sqlite:ElancoDatabase.db');
+                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+                $sql = $conn->query("SELECT 
+                SUM(CASE WHEN Behaviour_ID = 1 THEN 1 ELSE 0 END) AS Count1,
+                SUM(CASE WHEN Behaviour_ID = 2 THEN 1 ELSE 0 END) AS Count2,
+                SUM(CASE WHEN Behaviour_ID = 3 THEN 1 ELSE 0 END) AS Count3,
+                SUM(CASE WHEN Behaviour_ID = 4 THEN 1 ELSE 0 END) AS Count4,
+                SUM(CASE WHEN Behaviour_ID = 5 THEN 1 ELSE 0 END) AS Count5
+                FROM Pet_Activity
+                WHERE Date BETWEEN '01-01-2021' AND '07-01-2021'
+                AND PetID = 'CANINE001'");
+
+                $behaviourCounts = $sql->fetch(PDO::FETCH_ASSOC);
+
+            } catch (PDOException $e) {
+                echo "Connection failed: " . $e->getMessage();
+            }
+            ?>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+            <script>
+                const ctx = document.getElementById('myChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Normal', 'Sleeping', 'Eating', 'Walking', 'Playing'], //Probably unhardcode these at some point
+                        datasets: [{
+                            label: 'Behaviour Pattern',
+                            data: [
+                                <?php echo $behaviourCounts['Count1'] ?>,
+                                <?php echo $behaviourCounts['Count2'] ?>,
+                                <?php echo $behaviourCounts['Count3'] ?>,
+                                <?php echo $behaviourCounts['Count4'] ?>,
+                                <?php echo $behaviourCounts['Count5'] ?>
+                            ],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            </script>
+        </main>
+    </div>
+    
     <div class="footer">
         <div class="social-icons">
             <img src="ElancoPics/emailicon.webp" alt="Email">
