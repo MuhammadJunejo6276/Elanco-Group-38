@@ -146,6 +146,19 @@
 
 }
 
+.activity-status h2 {
+  margin-bottom: 20px;
+}
+
+.activity-status p {
+  margin-top: 10px;
+}
+
+.activity-status img {
+  max-width: 200px;
+  margin-top: 20px;
+}
+
 .graphcontainer{
  height: calc(100vh*0.8);
  width: calc(100vw*0.8);
