@@ -35,6 +35,96 @@
         </div>
     </nav>
 
+<div class="graphcontainer">
+        <main role="main" class="pb-5">
+            <h2>Average Weight</h2>
+            <div class="col-md-12">
+                <canvas id="myChart"></canvas>
+            </div>
+
+    <?php
+            try {
+                $conn = new PDO('sqlite:ElancoDatabase.db');
+                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+                // Fetch data for 7 days
+                $sql = $conn->query("SELECT 
+                Date,
+                SUM(\"Weight (kg)\")/24 AS Weight
+                FROM Pet_Activity
+                WHERE Date IN ('01-01-2021', '02-01-2021', '03-01-2021', '04-01-2021', '05-01-2021', '06-01-2021', '07-01-2021')
+                AND PetID = 'CANINE001'
+                GROUP BY Date");
+
+                $dates = [];
+                $Weight = [];
+                foreach($sql as $data)
+                {           
+                    $dates[] = $data['Date'];
+                    $Weight[] = $data['Weight'];
+                }
+
+            } catch (PDOException $e) {
+                echo "Connection failed: " . $e->getMessage();
+            }
+            ?>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+            <script>
+                const ctx = document.getElementById('myChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: <?php echo json_encode($dates) ?> ,
+                        datasets: [{
+                            label: 'Average Weight',
+                            data: <?php echo json_encode($Weight) ?> ,
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(153, 102, 255, 0.8)',
+                                'rgba(255, 159, 64, 0.8)',
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(201, 203, 207, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)',
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(201, 203, 207, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Average Weight'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+        </main>
+    </div>
+
+    
     <div class="footer">
         <div class="social-icons">
             <img src="ElancoPics/emailicon.webp" alt="Email">
