@@ -103,9 +103,19 @@
                     },
                     options: {
                         scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
                             y: {
                                 beginAtZero: true,
-                                max: 4 // as  max value for Barking_ID is 4
+                                max: 4, // as max value for Barking_ID is 4
+                                title: {
+                                    display: true,
+                                    text: 'Barking Level'
+                                }
                             }
                         }
                     }
