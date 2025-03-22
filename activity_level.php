@@ -104,9 +104,20 @@
                     },
                     options: {
                         scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
                             y: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Steps'
+                                }
                             }
+                        }
                         }
                     }
                 });
