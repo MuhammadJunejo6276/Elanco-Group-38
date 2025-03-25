@@ -5,6 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activity Level</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+    .graph-video-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .graph-container {
+        flex: 2;
+        height: 600px;
+        padding: 10px;
+        background-color: #f5faff;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .video-container {
+        flex: 1;
+        height: 600px;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-family: 'Arial', sans-serif;
+        color: #333;
+    }
+</style>
 </head>
 <body>
     <div class="header">
@@ -34,12 +69,20 @@
             <a href="barking_frequency.php">Barking Frequency</a>
         </div>
     </nav>
-    
+
     <div class="graphcontainer">
         <main role="main" class="pb-5">
             <h2>Total Steps Per Day</h2>
-            <div class="col-md-12">
-                <canvas id="myChart"></canvas>
+            <div class="graph-video-container">
+                <div class="graph-container">
+                    <canvas id="myChart"></canvas>
+                </div>
+                <div class="video-container">
+                    <video autoplay loop muted>
+                        <source src="ElancoPics/activity_video.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
             </div>
 
             <?php
@@ -47,29 +90,18 @@
                 $conn = new PDO('sqlite:ElancoDatabase.db');
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-                // Fetch data for 7 days
-                $sql = $conn->query("SELECT 
-                Date,
-                SUM(\"Activity Level (steps)\") AS Steps
-                FROM Pet_Activity
-                WHERE Date IN ('01-01-2021', '02-01-2021', '03-01-2021', '04-01-2021', '05-01-2021', '06-01-2021', '07-01-2021')
-                AND PetID = 'CANINE001'
-                GROUP BY Date");
+                $sql = $conn->query("SELECT Date, SUM(\"Activity Level (steps)\") AS Steps FROM Pet_Activity WHERE Date IN ('01-01-2021', '02-01-2021', '03-01-2021', '04-01-2021', '05-01-2021', '06-01-2021', '07-01-2021') AND PetID = 'CANINE001' GROUP BY Date");
 
                 $dates = [];
                 $steps = [];
-                foreach($sql as $data)
-                {           
+                foreach($sql as $data) {           
                     $dates[] = $data['Date'];
                     $steps[] = $data['Steps'];
                 }
-
             } catch (PDOException $e) {
                 echo "Connection failed: " . $e->getMessage();
             }
             ?>
-
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
             <script>
                 const ctx = document.getElementById('myChart').getContext('2d');
@@ -82,32 +114,24 @@
                             label: 'Total Steps Per Day',
                             data: <?php echo json_encode($steps) ?> ,
                             backgroundColor: [
-                                'rgba(75, 192, 192, 0.8)',
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(255, 206, 86, 0.8)',
-                                'rgba(153, 102, 255, 0.8)',
-                                'rgba(255, 159, 64, 0.8)',
-                                'rgba(255, 99, 132, 0.8)',
-                                'rgba(201, 203, 207, 0.8)'
+                                '#1170aa', '#fc7d0c', '#a3acb9', '#57606c', '#5fa2ce', '#c85200', '#7b848f'
                             ],
-                            borderColor: [
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)',
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(201, 203, 207, 1)'
-                            ],
-                            borderWidth: 1
+                            borderColor: '#333',
+                            borderWidth: 1,
+                            borderRadius: 8,
                         }]
                     },
                     options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
                         scales: {
                             x: {
                                 title: {
                                     display: true,
                                     text: 'Date'
+                                },
+                                grid: {
+                                    display: false
                                 }
                             },
                             y: {
@@ -115,9 +139,24 @@
                                 title: {
                                     display: true,
                                     text: 'Steps'
+                                },
+                                grid: {
+                                    color: '#eaeaea'
                                 }
                             }
-                        }
+                        },
+                        plugins: {
+                            tooltip: {
+                                enabled: true
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        animation: {
+                            duration: 1200,
+                            easing: 'easeOutQuart'
                         }
                     }
                 });
