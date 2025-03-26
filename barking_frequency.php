@@ -78,12 +78,6 @@
                 <div class="graph-container">
                     <canvas id="myChart"></canvas>
                 </div>
-                <div class="video-container">
-                    <video autoplay loop muted>
-                        <source src="ElancoPics/barking.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
             </div>
 
             <?php

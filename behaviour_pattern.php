@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Behaviour Pattern</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
     <div class="header">
@@ -39,12 +38,16 @@
     <div class="graphcontainer">
         <main role="main" class="pb-5">
             <h2>Behaviour Pattern Analysis</h2>
+            <div class="col-md-12">
+                <canvas id="myChart"></canvas>
+            </div>
 
             <?php
             try {
                 $conn = new PDO('sqlite:ElancoDatabase.db');
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+                // Fetch data for the week
                 $sql = $conn->query("SELECT 
                 SUM(CASE WHEN Behaviour_ID = 1 THEN 1 ELSE 0 END) AS Count1,
                 SUM(CASE WHEN Behaviour_ID = 2 THEN 1 ELSE 0 END) AS Count2,
@@ -56,57 +59,47 @@
                 AND PetID = 'CANINE001'");
 
                 $behaviourCounts = $sql->fetch(PDO::FETCH_ASSOC);
-                $total = array_sum($behaviourCounts);
-                $percentages = array_map(fn($count) => round(($count / $total) * 100, 1), $behaviourCounts);
 
             } catch (PDOException $e) {
                 echo "Connection failed: " . $e->getMessage();
             }
             ?>
 
-            <div class="gauge-video-container" style="display:flex; justify-content:space-around;">
-                <div class="gauge-video">
-                    <div id="gaugeNormal"></div>
-                    <video autoplay loop muted src="ElancoPics/normal.mp4" width="200"></video>
-                </div>
-                <div class="gauge-video">
-                    <div id="gaugeSleeping"></div>
-                    <video autoplay loop muted src="ElancoPics/sleeping.mp4" width="200"></video>
-                </div>
-                <div class="gauge-video">
-                    <div id="gaugeEating"></div>
-                    <video autoplay loop muted src="ElancoPics/eating.mp4" width="200"></video>
-                </div>
-                <div class="gauge-video">
-                    <div id="gaugeWalking"></div>
-                    <video autoplay loop muted src="ElancoPics/walking.mp4" width="200"></video>
-                </div>
-                <div class="gauge-video">
-                    <div id="gaugePlaying"></div>
-                    <video autoplay loop muted src="ElancoPics/playing.mp4" width="200"></video>
-                </div>
-            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
             <script>
-                google.charts.load('current', {'packages':['gauge']});
-                google.charts.setOnLoadCallback(drawGauges);
+                const ctx = document.getElementById('myChart').getContext('2d');
 
-                function drawGauges() {
-                    const labels = ['Normal', 'Sleeping', 'Eating', 'Walking', 'Playing'];
-                    const percentages = <?= json_encode(array_values($percentages)) ?>;
-
-                    labels.forEach((label, index) => {
-                        const data = google.visualization.arrayToDataTable([
-                            ['Label', 'Value'], [label, percentages[index]]
-                        ]);
-                        const chart = new google.visualization.Gauge(document.getElementById(`gauge${label}`));
-                        chart.draw(data, {width: 200, height: 200, minorTicks: 5});
-                    });
-                }
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Normal', 'Sleeping', 'Eating', 'Walking', 'Playing'],
+                        datasets: [{
+                            label: 'Behaviour Pattern',
+                            data: [
+                                <?php echo $behaviourCounts['Count1'] ?>,
+                                <?php echo $behaviourCounts['Count2'] ?>,
+                                <?php echo $behaviourCounts['Count3'] ?>,
+                                <?php echo $behaviourCounts['Count4'] ?>,
+                                <?php echo $behaviourCounts['Count5'] ?>
+                            ],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
             </script>
         </main>
     </div>
-
+    
     <div class="footer">
         <div class="social-icons">
             <img src="ElancoPics/emailicon.webp" alt="Email">
@@ -119,13 +112,16 @@
 
     <script>
         function toggleDropdown() {
-            const dropdown = document.getElementById("profileDropdown");
-            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+            var dropdown = document.getElementById("profileDropdown");
+            dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
         }
 
-        document.addEventListener("click", event => {
-            if (!document.querySelector(".profile-container").contains(event.target)) {
-                document.getElementById("profileDropdown").style.display = "none";
+        document.addEventListener("click", function(event) {
+            var profileContainer = document.querySelector(".profile-container");
+            var dropdown = document.getElementById("profileDropdown");
+
+            if (!profileContainer.contains(event.target)) {
+                dropdown.style.display = "none";
             }
         });
     </script>
