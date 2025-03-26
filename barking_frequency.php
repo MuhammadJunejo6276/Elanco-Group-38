@@ -6,41 +6,7 @@
     <title>Barking Frequency</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .graph-video-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .graph-container {
-            flex: 2;
-            height: 600px;
-            padding: 10px;
-            background-color: #f0f9ff;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .video-container {
-            flex: 1;
-            height: 600px;
-            overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-family: 'Arial', sans-serif;
-            color: #333;
-        }
-    </style>
+
 </head>
 <body>
     <div class="header">
@@ -127,7 +93,7 @@
                             },
                             y: {
                                 beginAtZero: true,
-                                max: 4,
+                                max: 3,
                                 title: { display: true, text: 'Barking Level' },
                                 grid: { color: '#e0f0ff' }
                             }
