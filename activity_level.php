@@ -168,6 +168,7 @@
         <div class="rights">&copy; 2025 Elanco. All rights reserved.</div>
     </div>
 
+    
     <script>
         function toggleDropdown() {
             var dropdown = document.getElementById("profileDropdown");
