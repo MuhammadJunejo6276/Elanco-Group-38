@@ -15,7 +15,7 @@
     }
     .graph-container {
         flex: 2;
-        height: 600px;
+        height: 400px;
         padding: 10px;
         background-color: #f5faff;
         border-radius: 12px;
@@ -23,7 +23,7 @@
     }
     .video-container {
         flex: 1;
-        height: 600px;
+        height: 300px;
         overflow: hidden;
         border-radius: 12px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
