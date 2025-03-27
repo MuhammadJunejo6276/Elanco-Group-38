@@ -91,51 +91,15 @@ try {
     <title>Activity Level</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-    .graph-video-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-    }
-    .graph-container {
-        flex: 2;
-        height: 400px;
-        padding: 10px;
-        background-color: #f5faff;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    .video-container {
-        flex: 1;
-        height: 300px;
-        overflow: hidden;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    h2 {
-        text-align: center;
-        margin-bottom: 20px;
-        font-family: 'Arial', sans-serif;
-        color: #333;
-    }
-</style>
 </head>
 <?php include 'header.php'?>
-    <div class="graphcontainer">
         <main role="main" class="pb-5">
             <h2>Total Steps Per Day</h2>
             <div class="graph-video-container">
-                <div class="graph-container">
+                <div class="graphcontainer">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
-
             <script>
                 const ctx = document.getElementById('myChart').getContext('2d');
 
