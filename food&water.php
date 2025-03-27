@@ -1,10 +1,98 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+try {
+    $conn = new PDO('sqlite:ElancoDatabase.db');
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    $stmt = $conn->prepare("SELECT PetID FROM Pet WHERE Owner_ID = :user_id LIMIT 1");
+    $stmt->bindParam(':user_id', $_SESSION['user_id']);
+    $stmt->execute();
+    $petData = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$petData) {
+        throw new Exception("No pets found for this user");
+    }
+    $petID = $petData['PetID'];
+
+    $stmt = $conn->prepare("SELECT DISTINCT Date FROM Pet_Activity WHERE PetID = :petID");
+    $stmt->bindParam(':petID', $petID);
+    $stmt->execute();
+    $dateRows = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
+    if (empty($dateRows)) {
+        throw new Exception("No activity data found for this pet");
+    }
+
+    $dateTimes = [];
+    foreach ($dateRows as $dateStr) {
+        $date = DateTime::createFromFormat('d-m-Y', $dateStr);
+        if ($date) {
+            $dateTimes[] = $date;
+        }
+    }
+
+    if (empty($dateTimes)) {
+        throw new Exception("No valid dates found");
+    }
+
+    $maxDate = max($dateTimes);
+
+    $dates = [];
+    for ($i = 6; $i >= 0; $i--) {
+        $date = clone $maxDate;
+        $date->modify("-$i days");
+        $dates[] = $date->format('d-m-Y');
+    }
+
+    $datePlaceholders = [];
+    foreach ($dates as $key => $date) {
+        $datePlaceholders[] = ":date$key";
+    }
+    $placeholders = implode(',', $datePlaceholders);
+
+    $sql = $conn->prepare("SELECT Date, SUM(`Food Intake (calories)`) AS FoodIntake, SUM(`Water Intake (ml)`) AS WaterIntake 
+                         FROM Pet_Activity 
+                         WHERE Date IN ($placeholders)
+                         AND PetID = :petID 
+                         GROUP BY Date");
+
+    foreach ($dates as $key => $date) {
+        $sql->bindValue(":date$key", $date);
+    }
+    $sql->bindParam(':petID', $petID);
+    $sql->execute();
+
+    $foodIntake = array_fill(0, count($dates), 0);
+    $waterIntake = array_fill(0, count($dates), 0);
+
+    while ($data = $sql->fetch(PDO::FETCH_ASSOC)) {
+        $index = array_search($data['Date'], $dates);
+        if ($index !== false) {
+            $foodIntake[$index] = (int)$data['FoodIntake'];
+            $waterIntake[$index] = (int)$data['WaterIntake'];
+        }
+    }
+
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+} catch (Exception $e) {
+    die($e->getMessage());
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food & Water</title>
+    <title>Food & Water Intake</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="header">
@@ -35,44 +123,12 @@
         </div>
     </nav>
 
- <div class="graphcontainer">
+    <div class="graphcontainer">
         <main role="main" class="pb-5">
             <h2>Food and Water Intake Per Day</h2>
             <div class="col-md-12">
                 <canvas id="myChart"></canvas>
             </div>
-
-            <?php
-            try {
-                $conn = new PDO('sqlite:ElancoDatabase.db');
-                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-                // Fetch data for 7 days
-                $sql = $conn->query("SELECT 
-                Date,
-                SUM(\"Food Intake (calories)\") AS FoodIntake,
-                SUM(\"Water Intake (ml)\") AS WaterIntake
-                FROM Pet_Activity
-                WHERE Date IN ('01-01-2021', '02-01-2021', '03-01-2021', '04-01-2021', '05-01-2021', '06-01-2021', '07-01-2021')
-                AND PetID = 'CANINE001'
-                GROUP BY Date");
-
-                $dates = [];
-                $foodIntake = [];
-                $waterIntake = [];
-                foreach($sql as $data)
-                {           
-                    $dates[] = $data['Date'];
-                    $foodIntake[] = $data['FoodIntake'];
-                    $waterIntake[] = $data['WaterIntake'];
-                }
-
-            } catch (PDOException $e) {
-                echo "Connection failed: " . $e->getMessage();
-            }
-            ?>
-
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
             <script>
                 const ctx = document.getElementById('myChart').getContext('2d');
@@ -117,31 +173,5 @@
             </script>
         </main>
     </div>
-    
-    <div class="footer">
-        <div class="social-icons">
-            <img src="ElancoPics/emailicon.webp" alt="Email">
-            <img src="ElancoPics/fblogo.png" alt="Facebook">
-            <img src="ElancoPics/instalogo.png" alt="Instagram">
-            <img src="ElancoPics/twitterlogo.png" alt="Twitter">
-        </div>
-        <div class="rights">&copy; 2025 Elanco. All rights reserved.</div>
-    </div>
-
-    <script>
-        function toggleDropdown() {
-            var dropdown = document.getElementById("profileDropdown");
-            dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
-        }
-
-        document.addEventListener("click", function(event) {
-            var profileContainer = document.querySelector(".profile-container");
-            var dropdown = document.getElementById("profileDropdown");
-
-            if (!profileContainer.contains(event.target)) {
-                dropdown.style.display = "none";
-            }
-        });
-    </script>
 </body>
 </html>
