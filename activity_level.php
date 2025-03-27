@@ -1,3 +1,30 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+try {
+    $conn = new PDO('sqlite:ElancoDatabase.db');
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $stmt = $conn->prepare("SELECT PetID FROM Pet WHERE Owner_ID = :user_id LIMIT 1");
+    $stmt->bindParam(':user_id', $_SESSION['user_id']);
+    $stmt->execute();
+    $petData = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$petData) {
+        throw new Exception("No pets found for this user");
+    }
+    $petID = $petData['PetID'];
+
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+} catch (Exception $e) {
+    die($e->getMessage());
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,7 +96,6 @@
             <a href="barking_frequency.php">Barking Frequency</a>
         </div>
     </nav>
-    
 
     <div class="graphcontainer">
         <main role="main" class="pb-5">
@@ -85,11 +111,18 @@
                 $conn = new PDO('sqlite:ElancoDatabase.db');
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-                $sql = $conn->query("SELECT Date, SUM(\"Activity Level (steps)\") AS Steps FROM Pet_Activity WHERE Date IN ('01-01-2021', '02-01-2021', '03-01-2021', '04-01-2021', '05-01-2021', '06-01-2021', '07-01-2021') AND PetID = 'CANINE001' GROUP BY Date");
+                $sql = $conn->prepare("SELECT Date, SUM(\"Activity Level (steps)\") AS Steps 
+                                     FROM Pet_Activity 
+                                     WHERE Date IN ('01-01-2021', '02-01-2021', '03-01-2021', 
+                                                   '04-01-2021', '05-01-2021', '06-01-2021', '07-01-2021') 
+                                     AND PetID = :petID 
+                                     GROUP BY Date");
+                $sql->bindParam(':petID', $petID);
+                $sql->execute();
 
                 $dates = [];
                 $steps = [];
-                foreach($sql as $data) {           
+                while($data = $sql->fetch(PDO::FETCH_ASSOC)) {           
                     $dates[] = $data['Date'];
                     $steps[] = $data['Steps'];
                 }
@@ -169,7 +202,6 @@
         <div class="rights">&copy; 2025 Elanco. All rights reserved.</div>
     </div>
 
-    
     <script>
         function toggleDropdown() {
             var dropdown = document.getElementById("profileDropdown");
