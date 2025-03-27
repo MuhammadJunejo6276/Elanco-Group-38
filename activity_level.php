@@ -140,20 +140,25 @@ try {
             </div>
         </div>
     </div>
-    <nav class="navbar">
-        <div class="nav-links">
-            <a href="current_activity.php">Current Activity</a>
-            <a href="activity_level.php">Activity Level</a>
-            <a href="heart_rate.php">Heart Rate</a>
-            <a href="temperature.php">Temperature</a>
-            <a href="weight.php">Weight</a>
-            <a href="food&water.php">Food and Water Intake</a>
-            <a href="calorie_burn.php">Calorie Burn</a>
-            <a href="breathing_rate.php">Breathing Rate</a>
-            <a href="behaviour_pattern.php">Behaviour Pattern</a>
-            <a href="barking_frequency.php">Barking Frequency</a>
-        </div>
-    </nav>
+    <?php
+$current_page = basename($_SERVER['PHP_SELF']);
+?>
+
+<nav class="navbar">
+    <div class="nav-links">
+        <a href="current_activity.php" class="<?= ($current_page == 'current_activity.php') ? 'active' : '' ?>">Current Activity</a>
+        <a href="activity_level.php" class="<?= ($current_page == 'activity_level.php') ? 'active' : '' ?>">Activity Level</a>
+        <a href="heart_rate.php" class="<?= ($current_page == 'heart_rate.php') ? 'active' : '' ?>">Heart Rate</a>
+        <a href="temperature.php" class="<?= ($current_page == 'temperature.php') ? 'active' : '' ?>">Temperature</a>
+        <a href="weight.php" class="<?= ($current_page == 'weight.php') ? 'active' : '' ?>">Weight</a>
+        <a href="food&water.php" class="<?= ($current_page == 'food&water.php') ? 'active' : '' ?>">Food and Water Intake</a>
+        <a href="calorie_burn.php" class="<?= ($current_page == 'calorie_burn.php') ? 'active' : '' ?>">Calorie Burn</a>
+        <a href="breathing_rate.php" class="<?= ($current_page == 'breathing_rate.php') ? 'active' : '' ?>">Breathing Rate</a>
+        <a href="behaviour_pattern.php" class="<?= ($current_page == 'behaviour_pattern.php') ? 'active' : '' ?>">Behaviour Pattern</a>
+        <a href="barking_frequency.php" class="<?= ($current_page == 'barking_frequency.php') ? 'active' : '' ?>">Barking Frequency</a>
+    </div>
+</nav>
+
 
     <div class="graphcontainer">
         <main role="main" class="pb-5">
