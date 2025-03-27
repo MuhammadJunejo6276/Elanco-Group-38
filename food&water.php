@@ -108,6 +108,7 @@ try {
             </div>
         </div>
     </div>
+    
     <nav class="navbar">
         <div class="nav-links">
             <a href="current_activity.php">Current Activity</a>
