@@ -69,6 +69,7 @@
             <a href="barking_frequency.php">Barking Frequency</a>
         </div>
     </nav>
+    
 
     <div class="graphcontainer">
         <main role="main" class="pb-5">
