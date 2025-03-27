@@ -95,41 +95,6 @@ try {
     <title>Heart Rate</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .graph-video-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .graph-container {
-            flex: 2;
-            height: 600px;
-            padding: 10px;
-            background-color: #fff5f8;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .video-container {
-            flex: 1;
-            height: 600px;
-            overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-family: 'Arial', sans-serif;
-            color: #333;
-        }
-    </style>
 </head>
 <body>
 <?php include 'header.php'?>
@@ -139,7 +104,7 @@ try {
         <main role="main" class="pb-5">
             <h2>Average Heart Rate</h2>
             <div class="graph-video-container">
-                <div class="graph-container">
+                <div class="graphcontainer">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
