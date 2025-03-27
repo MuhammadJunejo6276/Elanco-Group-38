@@ -168,7 +168,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: true,
                         scales: {
                             y: {
                                 beginAtZero: true,
