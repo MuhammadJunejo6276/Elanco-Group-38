@@ -79,65 +79,55 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="barking_frequency.php" class="<?= ($current_page == 'barking_frequency.php') ? 'active' : '' ?>">Barking Frequency</a>
     </div>
 </nav>
-
-
-    <div class="graphcontainer">
-        <main role="main" class="pb-5">
-            <h2>Average Weight</h2>
-            <div class="col-md-12">
+<div class="graphcontainer">
+    <main role="main" class="pb-5">
+        <h2>Average Weight</h2>
+        <div class="graph-video-container">
+            <div class="graph-container">
                 <canvas id="myChart"></canvas>
             </div>
-            <script>
-                const ctx = document.getElementById('myChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: <?php echo json_encode($dates); ?>,
-                        datasets: [{
-                            label: 'Average Weight',
-                            data: <?php echo json_encode($weights); ?>,
-                            backgroundColor: [
-                                'rgba(75, 192, 192, 0.8)',
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(255, 206, 86, 0.8)',
-                                'rgba(153, 102, 255, 0.8)',
-                                'rgba(255, 159, 64, 0.8)',
-                                'rgba(255, 99, 132, 0.8)',
-                                'rgba(201, 203, 207, 0.8)'
-                            ],
-                            borderColor: [
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)',
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(201, 203, 207, 1)'
-                            ],
-                            borderWidth: 1,
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Weight (kg)'
-                                }
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Date'
-                                }
-                            }
+        </div>
+        <script>
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: <?php echo json_encode($dates); ?>,
+                    datasets: [{
+                        label: 'Average Weight',
+                        data: <?php echo json_encode($weights); ?>,
+                        borderColor: '#ff6384',
+                        backgroundColor: 'rgba(255,99,132,0.2)',
+                        tension: 0.4,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#ff6384',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Date' },
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'Weight (kg)' },
+                            grid: { color: '#f0f0f0' }
                         }
+                    },
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: { enabled: true }
                     }
-                });
-            </script>
-        </main>
-    </div>
+                }
+            });
+        </script>
+    </main>
+</div>
     <div class="footer">
         <div class="social-icons">
             <img src="ElancoPics/emailicon.webp" alt="Email">
