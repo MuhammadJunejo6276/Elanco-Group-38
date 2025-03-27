@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Behaviour Pattern</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        #myChart {
+            max-width: 75vw;
+            max-height: 75vh;
+        }
+    </style>
 </head>
 <body>
     <div class="header">
