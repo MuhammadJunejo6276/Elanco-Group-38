@@ -1,3 +1,88 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+try {
+    $conn = new PDO('sqlite:ElancoDatabase.db');
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    $stmt = $conn->prepare("SELECT PetID FROM Pet WHERE Owner_ID = :user_id LIMIT 1");
+    $stmt->bindParam(':user_id', $_SESSION['user_id']);
+    $stmt->execute();
+    $petData = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$petData) {
+        throw new Exception("No pets found for this user");
+    }
+    $petID = $petData['PetID'];
+
+    $stmt = $conn->prepare("SELECT DISTINCT Date FROM Pet_Activity WHERE PetID = :petID");
+    $stmt->bindParam(':petID', $petID);
+    $stmt->execute();
+    $dateRows = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
+    if (empty($dateRows)) {
+        throw new Exception("No activity data found for this pet");
+    }
+
+    $dateTimes = [];
+    foreach ($dateRows as $dateStr) {
+        $date = DateTime::createFromFormat('d-m-Y', $dateStr);
+        if ($date) {
+            $dateTimes[] = $date;
+        }
+    }
+
+    if (empty($dateTimes)) {
+        throw new Exception("No valid dates found");
+    }
+
+    $maxDate = max($dateTimes);
+
+    $dates = [];
+    for ($i = 6; $i >= 0; $i--) {
+        $date = clone $maxDate;
+        $date->modify("-$i days");
+        $dates[] = $date->format('d-m-Y');
+    }
+
+    $datePlaceholders = [];
+    foreach ($dates as $key => $date) {
+        $datePlaceholders[] = ":date$key";
+    }
+    $placeholders = implode(',', $datePlaceholders);
+
+    $sql = $conn->prepare("SELECT Date, SUM(`Temperature (C)`) / 24 AS Temperature 
+                         FROM Pet_Activity 
+                         WHERE Date IN ($placeholders)
+                         AND PetID = :petID 
+                         GROUP BY Date");
+
+    foreach ($dates as $key => $date) {
+        $sql->bindValue(":date$key", $date);
+    }
+    $sql->bindParam(':petID', $petID);
+    $sql->execute();
+
+    $Temperature = array_fill(0, count($dates), 0);
+
+    while ($data = $sql->fetch(PDO::FETCH_ASSOC)) {
+        $index = array_search($data['Date'], $dates);
+        if ($index !== false) {
+            $Temperature[$index] = (float)$data['Temperature'];
+        }
+    }
+
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+} catch (Exception $e) {
+    die($e->getMessage());
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +90,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Temperature</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="header">
@@ -41,36 +127,6 @@
             <div class="col-md-12">
                 <canvas id="myChart"></canvas>
             </div>
-
-    <?php
-            try {
-                $conn = new PDO('sqlite:ElancoDatabase.db');
-                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-                // Fetch data for 7 days
-                $sql = $conn->query("SELECT 
-                Date,
-                SUM(\"Temperature (C)\")/24 AS Temperature
-                FROM Pet_Activity
-                WHERE Date IN ('01-01-2021', '02-01-2021', '03-01-2021', '04-01-2021', '05-01-2021', '06-01-2021', '07-01-2021')
-                AND PetID = 'CANINE001'
-                GROUP BY Date");
-
-                $dates = [];
-                $Temperature = [];
-                foreach($sql as $data)
-                {           
-                    $dates[] = $data['Date'];
-                    $Temperature[] = $data['Temperature'];
-                }
-
-            } catch (PDOException $e) {
-                echo "Connection failed: " . $e->getMessage();
-            }
-            ?>
-
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
             <script>
                 const ctx = document.getElementById('myChart').getContext('2d');
 
@@ -81,34 +137,19 @@
                         datasets: [{
                             label: 'Average Temperature',
                             data: <?php echo json_encode($Temperature) ?> ,
-                            backgroundColor: [
-                                'rgba(75, 192, 192, 0.8)',
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(255, 206, 86, 0.8)',
-                                'rgba(153, 102, 255, 0.8)',
-                                'rgba(255, 159, 64, 0.8)',
-                                'rgba(255, 99, 132, 0.8)',
-                                'rgba(201, 203, 207, 0.8)'
-                            ],
-                            borderColor: [
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)',
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(201, 203, 207, 1)'
-                            ],
-                            borderWidth: 1
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2
                         }]
                     },
                     options: {
+                        responsive: true,
                         scales: {
                             y: {
-                                beginAtZero: true,
+                                beginAtZero: false,
                                 title: {
                                     display: true,
-                                    text: 'Average Temperature'
+                                    text: 'Temperature (°C)'
                                 }
                             },
                             x: {
@@ -123,7 +164,6 @@
             </script>
         </main>
     </div>
-    
     <div class="footer">
         <div class="social-icons">
             <img src="ElancoPics/emailicon.webp" alt="Email">
@@ -143,7 +183,6 @@
         document.addEventListener("click", function(event) {
             var profileContainer = document.querySelector(".profile-container");
             var dropdown = document.getElementById("profileDropdown");
-
             if (!profileContainer.contains(event.target)) {
                 dropdown.style.display = "none";
             }
