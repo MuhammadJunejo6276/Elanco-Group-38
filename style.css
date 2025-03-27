@@ -105,6 +105,19 @@
   color: #0A4A94;
 }
 
+.nav-links a {
+  padding: 10px 15px;
+  text-decoration: none;
+  color: white;
+}
+
+.nav-links a.active {
+  background-color: #ffcc00;
+  color: black;
+  font-weight: bold;
+}
+
+
 .footer {
   background-color: #002a66;
   padding: 10px;
