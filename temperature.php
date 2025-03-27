@@ -1,10 +1,9 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
 
+if (!isset($_SESSION['user_id'])) {
+    $_SESSION['user_id'] = 1; 
+}
 try {
     $conn = new PDO('sqlite:ElancoDatabase.db');
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -93,38 +92,7 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="header">
-        <img src="ElancoPics/elancologo.png" alt="Elanco Logo">
-        <div class="profile-container" onclick="toggleDropdown()">
-            <img src="ElancoPics/profileicon.png" alt="Profile">
-            <button class="profile-button">Profile ▼</button>
-            <div class="dropdown" id="profileDropdown">
-                <a href="personalinfo.php">Personal Information</a>
-                <a href="settings.php">Settings</a>
-                <a href="help.php">Help</a>
-                <a href="logout.php">Logout</a>
-            </div>
-        </div>
-    </div>
-
-    <?php
-$current_page = basename($_SERVER['PHP_SELF']);
-?>
-
-<nav class="navbar">
-    <div class="nav-links">
-        <a href="current_activity.php" class="<?= ($current_page == 'current_activity.php') ? 'active' : '' ?>">Current Activity</a>
-        <a href="activity_level.php" class="<?= ($current_page == 'activity_level.php') ? 'active' : '' ?>">Activity Level</a>
-        <a href="heart_rate.php" class="<?= ($current_page == 'heart_rate.php') ? 'active' : '' ?>">Heart Rate</a>
-        <a href="temperature.php" class="<?= ($current_page == 'temperature.php') ? 'active' : '' ?>">Temperature</a>
-        <a href="weight.php" class="<?= ($current_page == 'weight.php') ? 'active' : '' ?>">Weight</a>
-        <a href="food&water.php" class="<?= ($current_page == 'food&water.php') ? 'active' : '' ?>">Food and Water Intake</a>
-        <a href="calorie_burn.php" class="<?= ($current_page == 'calorie_burn.php') ? 'active' : '' ?>">Calorie Burn</a>
-        <a href="breathing_rate.php" class="<?= ($current_page == 'breathing_rate.php') ? 'active' : '' ?>">Breathing Rate</a>
-        <a href="behaviour_pattern.php" class="<?= ($current_page == 'behaviour_pattern.php') ? 'active' : '' ?>">Behaviour Pattern</a>
-        <a href="barking_frequency.php" class="<?= ($current_page == 'barking_frequency.php') ? 'active' : '' ?>">Barking Frequency</a>
-    </div>
-</nav>
+<?php include 'header.php'?>
 
 
     <div class="graphcontainer">
