@@ -1,3 +1,92 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+try {
+    $conn = new PDO('sqlite:ElancoDatabase.db');
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Fetch the PetID for the logged-in user
+    $stmt = $conn->prepare("SELECT PetID FROM Pet WHERE Owner_ID = :user_id LIMIT 1");
+    $stmt->bindParam(':user_id', $_SESSION['user_id']);
+    $stmt->execute();
+    $petData = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$petData) {
+        throw new Exception("No pets found for this user");
+    }
+    $petID = $petData['PetID'];
+
+    // Fetch the distinct dates of activity for the pet
+    $stmt = $conn->prepare("SELECT DISTINCT Date FROM Pet_Activity WHERE PetID = :petID");
+    $stmt->bindParam(':petID', $petID);
+    $stmt->execute();
+    $dateRows = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
+    if (empty($dateRows)) {
+        throw new Exception("No activity data found for this pet");
+    }
+
+    $dateTimes = [];
+    foreach ($dateRows as $dateStr) {
+        $date = DateTime::createFromFormat('d-m-Y', $dateStr);
+        if ($date) {
+            $dateTimes[] = $date;
+        }
+    }
+
+    if (empty($dateTimes)) {
+        throw new Exception("No valid dates found");
+    }
+
+    $maxDate = max($dateTimes);
+
+    // Get the past 7 dates
+    $dates = [];
+    for ($i = 6; $i >= 0; $i--) {
+        $date = clone $maxDate;
+        $date->modify("-$i days");
+        $dates[] = $date->format('d-m-Y');
+    }
+
+    $datePlaceholders = [];
+    foreach ($dates as $key => $date) {
+        $datePlaceholders[] = ":date$key";
+    }
+    $placeholders = implode(',', $datePlaceholders);
+
+    // Query the heart rate data
+    $sql = $conn->prepare("SELECT Date, AVG(`Heart Rate (bpm)`) AS HeartRate
+                           FROM Pet_Activity 
+                           WHERE Date IN ($placeholders)
+                           AND PetID = :petID 
+                           GROUP BY Date");
+
+    foreach ($dates as $key => $date) {
+        $sql->bindValue(":date$key", $date);
+    }
+    $sql->bindParam(':petID', $petID);
+    $sql->execute();
+
+    $heartRates = array_fill(0, count($dates), 0);
+
+    while ($data = $sql->fetch(PDO::FETCH_ASSOC)) {
+        $index = array_search($data['Date'], $dates);
+        if ($index !== false) {
+            $heartRates[$index] = round($data['HeartRate'], 1);
+        }
+    }
+
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+} catch (Exception $e) {
+    die($e->getMessage());
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,35 +169,16 @@
                 </div>
             </div>
 
-            <?php
-            try {
-                $conn = new PDO('sqlite:ElancoDatabase.db');
-                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-                $sql = $conn->query("SELECT Hour, AVG(\"Heart Rate (bpm)\") AS HeartRate FROM Pet_Activity WHERE Date = '01-01-2021' AND PetID = 'CANINE001' GROUP BY Hour ORDER BY Hour");
-
-                $hour = [];
-                $HeartRate = [];
-                foreach($sql as $data) {
-                    $hour[] = $data['Hour'];
-                    $HeartRate[] = round($data['HeartRate'], 1);
-                }
-
-            } catch (PDOException $e) {
-                echo "Connection failed: " . $e->getMessage();
-            }
-            ?>
-
             <script>
                 const ctx = document.getElementById('myChart').getContext('2d');
 
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: <?php echo json_encode($hour) ?>,
+                        labels: <?php echo json_encode($dates) ?>,
                         datasets: [{
                             label: 'Average Beats Per Minute',
-                            data: <?php echo json_encode($HeartRate) ?>,
+                            data: <?php echo json_encode($heartRates) ?>,
                             borderColor: '#ff6384',
                             backgroundColor: 'rgba(255,99,132,0.2)',
                             tension: 0.4,
@@ -123,7 +193,7 @@
                         maintainAspectRatio: false,
                         scales: {
                             x: {
-                                title: { display: true, text: 'Hour of the Day' },
+                                title: { display: true, text: 'Date' },
                                 grid: { display: false }
                             },
                             y: {
