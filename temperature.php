@@ -155,7 +155,7 @@ try {
                                 'rgba(255, 99, 132, 1)',
                                 'rgba(201, 203, 207, 1)'
                             ],
-                            borderWidth: 2
+                            borderWidth: 1
                         }]
                     },
                     options: {
