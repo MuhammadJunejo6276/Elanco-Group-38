@@ -34,11 +34,11 @@ try {
             $current_activity = htmlspecialchars($activity_data['Behaviour_Desc'], ENT_QUOTES, 'UTF-8');
 
             $activity_images = [
-                'Normal' => 'ElancoPics/normal.avif',
-                'Sleeping' => 'ElancoPics/sleeping.webp',
-                'Eating' => 'ElancoPics/dog-eating-out-of-bowl.webp',
-                'Walking' => 'ElancoPics/walking.webp',
-                'Playing' => 'ElancoPics/playing.jpg'
+                'Normal' => 'ElancoPics/Normalcreature.png',
+                'Sleeping' => 'ElancoPics/Doggysleeping.png',
+                'Eating' => 'ElancoPics/Hungrycritter.png',
+                'Walking' => 'ElancoPics/dOGGYRUNNINGORWALKING.png',
+                'Playing' => 'ElancoPics/doggyplaying.png'
             ];
 
             echo "<div class='activity-status'>";
