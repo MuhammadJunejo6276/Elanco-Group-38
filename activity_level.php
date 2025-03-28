@@ -120,7 +120,7 @@ try {
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: true,
                         scales: {
                             x: {
                                 title: {
