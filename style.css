@@ -172,8 +172,14 @@
   margin-top: 20px;
 }
 
-.graphcontainer{
- height: calc(100vh*0.8);
- width: calc(100vw*0.8);
- padding: 50px;
+.graphcontainer {
+  display: block;
+  justify-content: center;
+  align-items: center;
+  max-width: 75vw;
+  max-height: 75vh;
+  padding: 10px;
+  margin: 0 auto;
+  flex-direction: column; 
 }
+
