@@ -64,9 +64,13 @@
                                 <?php echo $behaviourCounts['Count4'] ?>,
                                 <?php echo $behaviourCounts['Count5'] ?>
                             ],
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
+                            backgroundColor: 'rgba(255,99,132, 0.3)',
+                            borderColor: '#ff6384',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#ff6384',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
                         }]
                     },
                     options: {
