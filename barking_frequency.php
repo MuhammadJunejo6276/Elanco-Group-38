@@ -116,7 +116,7 @@ try {
                             label: 'Average Barking Level Per Day',
                             data: <?php echo json_encode($avgBark) ?>,
                             borderColor: '#ff6384',
-                            backgroundColor: 'rgba(54,162,235,0.3)',
+                            backgroundColor: 'rgba(255,99,132, 0.3)',
                             tension: 0.4,
                             pointBackgroundColor: '#ffffff',
                             pointBorderColor: '#ff6384',
