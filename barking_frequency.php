@@ -115,11 +115,11 @@ try {
                         datasets: [{
                             label: 'Average Barking Level Per Day',
                             data: <?php echo json_encode($avgBark) ?>,
-                            borderColor: '#36a2eb',
+                            borderColor: '#ff6384',
                             backgroundColor: 'rgba(54,162,235,0.3)',
                             tension: 0.4,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#36a2eb',
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#ff6384',
                             pointRadius: 5,
                             pointHoverRadius: 7,
                         }]
