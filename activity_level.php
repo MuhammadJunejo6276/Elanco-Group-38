@@ -93,13 +93,17 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <?php include 'header.php'?>
+
+
+    <div class="graphcontainer">
         <main role="main" class="pb-5">
             <h2>Total Steps Per Day</h2>
             <div class="graph-video-container">
-                <div class="graphcontainer">
+                <div class="graph-container">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
+
             <script>
                 const ctx = document.getElementById('myChart').getContext('2d');
 
