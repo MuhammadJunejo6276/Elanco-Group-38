@@ -8,8 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 try {
     $conn = new PDO('sqlite:ElancoDatabase.db');
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // Fetch the PetID for the logged-in user
+
     $stmt = $conn->prepare("SELECT PetID FROM Pet WHERE Owner_ID = :user_id LIMIT 1");
     $stmt->bindParam(':user_id', $_SESSION['user_id']);
     $stmt->execute();
@@ -20,7 +19,6 @@ try {
     }
     $petID = $petData['PetID'];
 
-    // Fetch the distinct dates of activity for the pet
     $stmt = $conn->prepare("SELECT DISTINCT Date FROM Pet_Activity WHERE PetID = :petID");
     $stmt->bindParam(':petID', $petID);
     $stmt->execute();
