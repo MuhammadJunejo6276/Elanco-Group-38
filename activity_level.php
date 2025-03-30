@@ -9,7 +9,6 @@ try {
     $conn = new PDO('sqlite:ElancoDatabase.db');
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Get user's pet
     $stmt = $conn->prepare("SELECT PetID FROM Pet WHERE Owner_ID = :user_id LIMIT 1");
     $stmt->bindParam(':user_id', $_SESSION['user_id']);
     $stmt->execute();
