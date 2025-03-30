@@ -71,7 +71,6 @@ try {
         $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
     }
 
-    // Get heart rate data
     $datePlaceholders = [];
     foreach ($dates as $key => $date) {
         $datePlaceholders[] = ":date$key";
