@@ -73,7 +73,6 @@ try {
         $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
     }
 
-    // Calculate week range
     $minWeekValue = '2020-W01';
     $maxWeekValue = (new DateTime())->format('o-\WW');
 
