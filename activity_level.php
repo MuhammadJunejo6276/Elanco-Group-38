@@ -49,7 +49,6 @@ try {
             $weekStart = new DateTime($selectedWeek);
             $weekStart->modify('monday this week');
             
-            // Generate dates for selected week
             $dates = [];
             for ($i = 0; $i < 7; $i++) {
                 $currentDate = clone $weekStart;
