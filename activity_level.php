@@ -92,7 +92,6 @@ try {
     $sql->execute();
     $steps = array_fill(0, count($dates), 0);
 
-    // Fill in actual data where available
     while ($data = $sql->fetch(PDO::FETCH_ASSOC)) {
         $index = array_search($data['Date'], $dates);
         if ($index !== false) {
