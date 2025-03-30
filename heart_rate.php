@@ -98,7 +98,6 @@ try {
         }
     }
 
-    // Calculate week range
     $minWeekValue = '2020-W01';
     $maxWeekValue = (new DateTime())->format('o-\WW');
 
