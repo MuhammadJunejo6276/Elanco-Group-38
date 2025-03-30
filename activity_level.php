@@ -9,6 +9,7 @@ try {
     $conn = new PDO('sqlite:ElancoDatabase.db');
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Get user's pet
     $stmt = $conn->prepare("SELECT PetID FROM Pet WHERE Owner_ID = :user_id LIMIT 1");
     $stmt->bindParam(':user_id', $_SESSION['user_id']);
     $stmt->execute();
@@ -19,6 +20,7 @@ try {
     }
     $petID = $petData['PetID'];
 
+    // Get all available dates for the pet
     $stmt = $conn->prepare("SELECT DISTINCT Date FROM Pet_Activity WHERE PetID = :petID");
     $stmt->bindParam(':petID', $petID);
     $stmt->execute();
@@ -28,6 +30,7 @@ try {
         throw new Exception("No activity data found for this pet");
     }
 
+    // Process dates and find date range
     $dateTimes = [];
     foreach ($dateRows as $dateStr) {
         $date = DateTime::createFromFormat('d-m-Y', $dateStr);
@@ -41,14 +44,45 @@ try {
     }
 
     $maxDate = max($dateTimes);
+    $minDate = min($dateTimes);
 
-    $dates = [];
-    for ($i = 6; $i >= 0; $i--) {
-        $date = clone $maxDate;
-        $date->modify("-$i days");
-        $dates[] = $date->format('d-m-Y');
+    // Handle week selection
+    if (isset($_GET['week']) && !empty($_GET['week'])) {
+        try {
+            $selectedWeek = $_GET['week'];
+            $weekStart = new DateTime($selectedWeek);
+            $weekStart->modify('monday this week');
+            
+            // Generate dates for selected week
+            $dates = [];
+            for ($i = 0; $i < 7; $i++) {
+                $currentDate = clone $weekStart;
+                $currentDate->modify("+$i days");
+                $dates[] = $currentDate->format('d-m-Y');
+            }
+            $selectedWeekValue = $selectedWeek;
+        } catch (Exception $e) {
+            die("Invalid week selected");
+        }
+    } else {
+        // Generate dates for latest week in database
+        $dates = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = clone $maxDate;
+            $date->modify("-$i days");
+            $dates[] = $date->format('d-m-Y');
+        }
+        // Set default week value
+        $isoYear = $maxDate->format('o');
+        $isoWeek = $maxDate->format('W');
+        $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
     }
 
+    // Calculate min/max weeks for date input
+    $minWeekValue = '2020-W01'; // Explicitly set minimum to 2020
+    $maxWeekValue = (new DateTime())->format('o-\WW');
+
+    // Prepare query for selected dates
     $datePlaceholders = [];
     foreach ($dates as $key => $date) {
         $datePlaceholders[] = ":date$key";
@@ -67,8 +101,10 @@ try {
     $sql->bindParam(':petID', $petID);
     $sql->execute();
 
+    // Initialize steps array with zeros
     $steps = array_fill(0, count($dates), 0);
 
+    // Fill in actual data where available
     while ($data = $sql->fetch(PDO::FETCH_ASSOC)) {
         $index = array_search($data['Date'], $dates);
         if ($index !== false) {
@@ -92,12 +128,21 @@ try {
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<?php include 'header.php'?>
-
+<body>
+    <?php include 'header.php' ?>
 
     <div class="graphcontainer">
         <main role="main" class="pb-5">
             <h2>Total Steps Per Day</h2>
+            <form method="GET" class="week-selector">
+                <label for="week">Select Week:</label>
+                <input type="week" id="week" name="week" 
+                       value="<?php echo htmlspecialchars($selectedWeekValue) ?>"
+                       min="2020-W01" 
+                       max="<?php echo $maxWeekValue ?>">
+                <button type="submit">Show</button>
+            </form>
+            
             <div class="graph-video-container">
                 <div class="graph-container">
                     <canvas id="myChart"></canvas>
@@ -106,16 +151,16 @@ try {
 
             <script>
                 const ctx = document.getElementById('myChart').getContext('2d');
-
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: <?php echo json_encode($dates) ?> ,
+                        labels: <?php echo json_encode($dates) ?>,
                         datasets: [{
                             label: 'Total Steps Per Day',
-                            data: <?php echo json_encode($steps) ?> ,
+                            data: <?php echo json_encode($steps) ?>,
                             backgroundColor: [
-                                '#1170aa', '#fc7d0c', '#a3acb9', '#57606c', '#5fa2ce', '#c85200', '#7b848f'
+                                '#1170aa', '#fc7d0c', '#a3acb9', '#57606c', 
+                                '#5fa2ce', '#c85200', '#7b848f'
                             ],
                             borderColor: '#333',
                             borderWidth: 1,
@@ -127,33 +172,17 @@ try {
                         maintainAspectRatio: true,
                         scales: {
                             x: {
-                                title: {
-                                    display: true,
-                                    text: 'Date'
-                                },
-                                grid: {
-                                    display: false
-                                }
+                                title: { display: true, text: 'Date' },
+                                grid: { display: false }
                             },
                             y: {
                                 beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Steps'
-                                },
-                                grid: {
-                                    color: '#eaeaea'
-                                }
+                                title: { display: true, text: 'Steps' },
+                                grid: { color: '#eaeaea' }
                             }
                         },
                         plugins: {
-                            tooltip: {
-                                enabled: true
-                            },
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            }
+                            legend: { display: true, position: 'top' }
                         },
                         animation: {
                             duration: 1200,
@@ -165,22 +194,6 @@ try {
         </main>
     </div>
 
-<?php include 'footer.php'?>
-
-    <script>
-        function toggleDropdown() {
-            var dropdown = document.getElementById("profileDropdown");
-            dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
-        }
-
-        document.addEventListener("click", function(event) {
-            var profileContainer = document.querySelector(".profile-container");
-            var dropdown = document.getElementById("profileDropdown");
-
-            if (!profileContainer.contains(event.target)) {
-                dropdown.style.display = "none";
-            }
-        });
-    </script>
+    <?php include 'footer.php' ?>
 </body>
 </html>
