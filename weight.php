@@ -44,7 +44,6 @@ try {
     $maxDate = max($dateTimes);
     $minDate = min($dateTimes);
 
-    // Handle week selection
     if (isset($_GET['week']) && !empty($_GET['week'])) {
         try {
             $selectedWeek = $_GET['week'];
