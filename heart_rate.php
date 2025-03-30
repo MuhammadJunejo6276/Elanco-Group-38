@@ -28,7 +28,6 @@ try {
         throw new Exception("No activity data found for this pet");
     }
 
-    // Process dates
     $dateTimes = [];
     foreach ($dateRows as $dateStr) {
         $date = DateTime::createFromFormat('d-m-Y', $dateStr);
