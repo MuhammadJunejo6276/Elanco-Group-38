@@ -28,7 +28,6 @@ try {
         throw new Exception("No activity data found for this pet");
     }
 
-    // Process dates and find date range
     $dateTimes = [];
     foreach ($dateRows as $dateStr) {
         $date = DateTime::createFromFormat('d-m-Y', $dateStr);
