@@ -70,8 +70,6 @@ try {
         $isoWeek = $maxDate->format('W');
         $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
     }
-
-    // Calculate min/max weeks for date input
     $minWeekValue = '2020-W01'; // Explicitly set minimum to 2020
     $maxWeekValue = (new DateTime())->format('o-\WW');
 
