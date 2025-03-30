@@ -42,7 +42,6 @@ try {
 
     $maxDate = max($dateTimes);
 
-    // Get the past 7 dates
     $dates = [];
     for ($i = 6; $i >= 0; $i--) {
         $date = clone $maxDate;
@@ -56,7 +55,6 @@ try {
     }
     $placeholders = implode(',', $datePlaceholders);
 
-    // Query the heart rate data
     $sql = $conn->prepare("SELECT Date, AVG(`Heart Rate (bpm)`) AS HeartRate
                            FROM Pet_Activity 
                            WHERE Date IN ($placeholders)
