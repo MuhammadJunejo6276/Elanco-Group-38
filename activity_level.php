@@ -73,7 +73,6 @@ try {
     $minWeekValue = '2020-W01';
     $maxWeekValue = (new DateTime())->format('o-\WW');
 
-    // Prepare query for selected dates
     $datePlaceholders = [];
     foreach ($dates as $key => $date) {
         $datePlaceholders[] = ":date$key";
