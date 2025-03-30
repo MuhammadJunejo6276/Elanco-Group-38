@@ -70,7 +70,7 @@ try {
         $isoWeek = $maxDate->format('W');
         $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
     }
-    $minWeekValue = '2020-W01'; // Explicitly set minimum to 2020
+    $minWeekValue = '2020-W01';
     $maxWeekValue = (new DateTime())->format('o-\WW');
 
     // Prepare query for selected dates
