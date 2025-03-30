@@ -19,7 +19,6 @@ try {
     }
     $petID = $petData['PetID'];
 
-    // Get all available dates
     $stmt = $conn->prepare("SELECT DISTINCT Date FROM Pet_Activity WHERE PetID = :petID");
     $stmt->bindParam(':petID', $petID);
     $stmt->execute();
