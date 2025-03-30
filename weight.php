@@ -75,7 +75,6 @@ try {
         $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
     }
 
-    // Get weight data
     $datePlaceholders = [];
     foreach ($dates as $key => $date) {
         $datePlaceholders[] = ":date$key";
