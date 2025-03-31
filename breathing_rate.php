@@ -58,7 +58,6 @@ try {
             die("Invalid week selected");
         }
     } else {
-        // Default to latest week
         $dates = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = clone $maxDate;
