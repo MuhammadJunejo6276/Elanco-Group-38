@@ -54,9 +54,7 @@ try {
         } else {
             echo "<p>No recent activity found for {$pet_name}</p>";
         }
-    } else {
-        echo "<p>No pet registered for this account</p>";
-    }
+    } 
 } catch (PDOException $e) {
     die("Database error: " . $e->getMessage());
 }
