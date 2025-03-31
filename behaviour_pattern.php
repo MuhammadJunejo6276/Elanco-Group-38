@@ -8,12 +8,12 @@ if (!isset($_SESSION['user_id'])) {
 try {
     $conn = new PDO('sqlite:ElancoDatabase.db');
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
+
     $stmt = $conn->prepare("SELECT PetID FROM Pet WHERE Owner_ID = :user_id LIMIT 1");
     $stmt->bindParam(':user_id', $_SESSION['user_id']);
     $stmt->execute();
     $petData = $stmt->fetch(PDO::FETCH_ASSOC);
-    
+
     if (!$petData) {
         throw new Exception("No pets found for this user");
     }
@@ -41,31 +41,74 @@ try {
     }
 
     $maxDate = max($dateTimes);
+    $minDate = min($dateTimes);
 
-    $dates = [];
-    for ($i = 6; $i >= 0; $i--) {
-        $date = clone $maxDate;
-        $date->modify("-$i days");
-        $dates[] = $date->format('d-m-Y');
+    if (isset($_GET['week']) && !empty($_GET['week'])) {
+        try {
+            $selectedWeek = $_GET['week'];
+            $weekStart = new DateTime($selectedWeek);
+            $weekStart->modify('monday this week');
+            
+            $dates = [];
+            for ($i = 0; $i < 7; $i++) {
+                $currentDate = clone $weekStart;
+                $currentDate->modify("+$i days");
+                $dates[] = $currentDate->format('d-m-Y');
+            }
+            $selectedWeekValue = $selectedWeek;
+        } catch (Exception $e) {
+            die("Invalid week selected");
+        }
+    } else {
+        $weekStart = clone $maxDate;
+        $weekStart->modify('monday this week');
+        $dates = [];
+        for ($i = 0; $i < 7; $i++) {
+            $currentDate = clone $weekStart;
+            $currentDate->modify("+$i days");
+            $dates[] = $currentDate->format('d-m-Y');
+        }
+        $selectedWeekValue = $maxDate->format('o-\WW');
     }
 
-    $sql = $conn->prepare("SELECT 
-        SUM(CASE WHEN Behaviour_ID = 1 THEN 1 ELSE 0 END) AS Count1,
-        SUM(CASE WHEN Behaviour_ID = 2 THEN 1 ELSE 0 END) AS Count2,
-        SUM(CASE WHEN Behaviour_ID = 3 THEN 1 ELSE 0 END) AS Count3,
-        SUM(CASE WHEN Behaviour_ID = 4 THEN 1 ELSE 0 END) AS Count4,
-        SUM(CASE WHEN Behaviour_ID = 5 THEN 1 ELSE 0 END) AS Count5
-        FROM Pet_Activity
-        WHERE Date IN (" . implode(',', array_fill(0, count($dates), '?')) . ")
-        AND PetID = ?");
+    $minWeekValue = $minDate->format('o-\WW');
+    $maxWeekValue = $maxDate->format('o-\WW');
+
+    $stmt = $conn->prepare("SELECT Behaviour_ID, Behaviour_Desc FROM Behaviour ORDER BY Behaviour_ID");
+    $stmt->execute();
+    $behaviours = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $labels = array_column($behaviours, 'Behaviour_Desc');
+
+    $datePlaceholders = [];
+    foreach ($dates as $key => $date) {
+        $datePlaceholders[] = ":date$key";
+    }
+    $placeholders = implode(',', $datePlaceholders);
+
+    $selectClauses = array_map(function($behaviour) {
+        $id = $behaviour['Behaviour_ID'];
+        return "SUM(CASE WHEN Behaviour_ID = $id THEN 1 ELSE 0 END) AS Count$id";
+    }, $behaviours);
+    $selectSql = implode(', ', $selectClauses);
+
+    $sql = $conn->prepare("SELECT $selectSql 
+                          FROM Pet_Activity 
+                          WHERE Date IN ($placeholders)
+                          AND PetID = :petID");
 
     foreach ($dates as $key => $date) {
-        $sql->bindValue($key + 1, $date);
+        $sql->bindValue(":date$key", $date);
     }
-    $sql->bindValue(count($dates) + 1, $petID);
+    $sql->bindParam(':petID', $petID);
     $sql->execute();
 
     $behaviourCounts = $sql->fetch(PDO::FETCH_ASSOC);
+
+    $counts = [];
+    foreach ($behaviours as $behaviour) {
+        $id = $behaviour['Behaviour_ID'];
+        $counts[] = $behaviourCounts["Count$id"] ?? 0;
+    }
 
 } catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
@@ -90,33 +133,34 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<?php include 'header.php'; ?>
-
+    <?php include 'header.php'; ?>
 
     <div class="graphcontainer">
         <main role="main" class="pb-5">
             <h2>Behaviour Pattern Analysis</h2>
+            <form method="GET" class="week-selector">
+                <label for="week">Select Week:</label>
+                <input type="week" id="week" name="week" 
+                       value="<?php echo htmlspecialchars($selectedWeekValue) ?>"
+                       min="<?php echo $minWeekValue ?>" 
+                       max="<?php echo $maxWeekValue ?>">
+                <button type="submit">Update</button>
+            </form>
+            
             <div class="col-md-12">
                 <canvas id="myChart"></canvas>
             </div>
 
             <script>
                 const ctx = document.getElementById('myChart').getContext('2d');
-
                 new Chart(ctx, {
                     type: 'radar',
                     data: {
-                        labels: ['Normal', 'Sleeping', 'Eating', 'Walking', 'Playing'],
+                        labels: <?php echo json_encode($labels) ?>,
                         datasets: [{
-                            label: 'Behaviour Pattern',
-                            data: [
-                                <?php echo $behaviourCounts['Count1'] ?? 0; ?>,
-                                <?php echo $behaviourCounts['Count2'] ?? 0; ?>,
-                                <?php echo $behaviourCounts['Count3'] ?? 0; ?>,
-                                <?php echo $behaviourCounts['Count4'] ?? 0; ?>,
-                                <?php echo $behaviourCounts['Count5'] ?? 0; ?>
-                            ],
-                            backgroundColor: 'rgba(255,99,132, 0.3)',
+                            label: 'Behaviour Frequency',
+                            data: <?php echo json_encode($counts) ?>,
+                            backgroundColor: 'rgba(255,99,132,0.3)',
                             borderColor: '#ff6384',
                             borderWidth: 2,
                             pointBackgroundColor: '#ffffff',
@@ -145,8 +189,8 @@ try {
             </script>
         </main>
     </div>
-    
-<?php include 'footer.php'; ?>
+
+    <?php include 'footer.php'; ?>
 
     <script>
         function toggleDropdown() {
@@ -157,7 +201,7 @@ try {
         document.addEventListener("click", function(event) {
             var profileContainer = document.querySelector(".profile-container");
             var dropdown = document.getElementById("profileDropdown");
-
+            
             if (!profileContainer.contains(event.target)) {
                 dropdown.style.display = "none";
             }
@@ -165,4 +209,3 @@ try {
     </script>
 </body>
 </html>
-
