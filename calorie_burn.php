@@ -123,8 +123,7 @@ try {
 <div class="graphcontainer">
     <main role="main" class="pb-5">
         <h2>Calories Burned Per Day</h2>
-        
-        <!-- Week selection form -->
+
         <form method="GET" class="week-form">
             <label for="week">Select Week:</label>
             <input type="week" id="week" name="week" 
