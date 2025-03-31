@@ -4,6 +4,7 @@ session_start();
 if (!isset($_SESSION['user_id'])) {
     $_SESSION['user_id'] = 1; 
 }
+
 try {
     $conn = new PDO('sqlite:ElancoDatabase.db');
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -79,11 +80,14 @@ try {
     }
     $placeholders = implode(',', $datePlaceholders);
 
-    $sql = $conn->prepare("SELECT Date, SUM(`Temperature (C)`) / 24 AS Temperature 
-                         FROM Pet_Activity 
-                         WHERE Date IN ($placeholders)
-                         AND PetID = :petID 
-                         GROUP BY Date");
+    $sql = $conn->prepare("SELECT Date, 
+                          MIN(`Temperature (C)`) as MinTemp,
+                          MAX(`Temperature (C)`) as MaxTemp,
+                          AVG(`Temperature (C)`) as AvgTemp 
+                          FROM Pet_Activity 
+                          WHERE Date IN ($placeholders)
+                          AND PetID = :petID 
+                          GROUP BY Date");
 
     foreach ($dates as $key => $date) {
         $sql->bindValue(":date$key", $date);
@@ -91,18 +95,35 @@ try {
     $sql->bindParam(':petID', $petID);
     $sql->execute();
 
-    $Temperature = array_fill(0, count($dates), 0);
-
+    $tempData = array_fill(0, count($dates), ['Min' => 0, 'Max' => 0, 'Avg' => 0]);
+    $averages = [];
+    
     while ($data = $sql->fetch(PDO::FETCH_ASSOC)) {
         $index = array_search($data['Date'], $dates);
         if ($index !== false) {
-            $Temperature[$index] = (float)$data['Temperature'];
+            $tempData[$index] = [
+                'Min' => (float)$data['MinTemp'],
+                'Max' => (float)$data['MaxTemp'],
+                'Avg' => (float)$data['AvgTemp']
+            ];
+            $averages[] = (float)$data['AvgTemp'];
         }
     }
 
-} catch (PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
-} catch (Exception $e) {
+    $minAvg = min($averages);
+    $maxAvg = max($averages);
+    $range = $maxAvg - $minAvg ?: 1;
+
+    $backgroundColors = [];
+    foreach ($averages as $avg) {
+        $ratio = ($avg - $minAvg) / $range;
+        $red = (int)(30 + (225 * $ratio));
+        $green = (int)(144 - (44 * $ratio));
+        $blue = (int)(255 - (255 * $ratio));
+        $backgroundColors[] = "rgba($red, $green, $blue, 0.7)";
+    }
+
+} catch (PDOException | Exception $e) {
     die($e->getMessage());
 }
 ?>
@@ -112,7 +133,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temperature</title>
+    <title>Temperature Range</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -121,7 +142,11 @@ try {
 
 <div class="graphcontainer">
     <main role="main" class="pb-5">
-        <h2>Average Temperature</h2>
+        <h2>Daily Temperature Range</h2>
+        <div class="color-legend">
+            <span class="cool-temp">Cool</span>
+            <span class="warm-temp">Warm</span>
+        </div>
 
         <form method="GET" class="week-form">
             <label for="week">Select Week:</label>
@@ -134,45 +159,64 @@ try {
 
         <div class="graph-video-container">
             <div class="graph-container">
-                <canvas id="myChart"></canvas>
+                <canvas id="tempChart"></canvas>
             </div>
         </div>
-        
+
         <script>
-            const ctx = document.getElementById('myChart').getContext('2d');
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            const averages = <?php echo json_encode($averages); ?>;
+            
             new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: <?php echo json_encode($dates); ?>,
                     datasets: [{
-                        label: 'Average Temperature',
-                        data: <?php echo json_encode($Temperature); ?>,
-                        borderColor: '#ff6384',
-                        backgroundColor: 'rgba(255,99,132,0.2)',
-                        tension: 0.4,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#ff6384',
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
+                        label: 'Temperature Range (°C)',
+                        data: <?php echo json_encode(array_map(fn($t) => [$t['Min'], $t['Max']], $tempData)); ?>,
+                        backgroundColor: <?php echo json_encode($backgroundColors); ?>,
+                        borderColor: '#333',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
                     }]
                 },
                 options: {
+                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: true,
                     scales: {
                         x: {
-                            title: { display: true, text: 'Date' },
-                            grid: { display: false }
+                            title: { 
+                                display: true, 
+                                text: 'Temperature (°C)'
+                            },
+                            grid: { color: '#f0f0f0' }
                         },
                         y: {
-                            beginAtZero: false,
-                            title: { display: true, text: 'Temperature (°C)' },
-                            grid: { color: '#f0f0f0' }
+                            title: { 
+                                display: true, 
+                                text: 'Date'
+                            },
+                            grid: { display: false }
                         }
                     },
                     plugins: {
-                        legend: { display: true, position: 'top' },
-                        tooltip: { enabled: true }
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (context) => context[0].label,
+                                label: (context) => {
+                                    const [min, max] = context.raw;
+                                    const avg = averages[context.dataIndex].toFixed(1);
+                                    return [
+                                        `Minimum: ${min}°C`,
+                                        `Maximum: ${max}°C`,
+                                        `Average: ${avg}°C`
+                                    ];
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -182,17 +226,18 @@ try {
 
 <?php include 'footer.php'?>
 <script>
-        function toggleDropdown() {
-            var dropdown = document.getElementById("profileDropdown");
-            dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
+    function toggleDropdown() {
+        const dropdown = document.getElementById("profileDropdown");
+        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+    }
+    
+    document.addEventListener("click", function(event) {
+        const profileContainer = document.querySelector(".profile-container");
+        const dropdown = document.getElementById("profileDropdown");
+        if (!profileContainer.contains(event.target)) {
+            dropdown.style.display = "none";
         }
-        document.addEventListener("click", function(event) {
-            var profileContainer = document.querySelector(".profile-container");
-            var dropdown = document.getElementById("profileDropdown");
-            if (!profileContainer.contains(event.target)) {
-                dropdown.style.display = "none";
-            }
-        });
+    });
 </script>
 </body>
 </html>
