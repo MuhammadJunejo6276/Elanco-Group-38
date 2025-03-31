@@ -69,7 +69,7 @@ try {
     }
 
     $minWeekValue = '2020-W01';
-    $maxWeekValue = (new DateTime())->format('o-\WW');
+    $maxWeekValue = '2023-W52';
 
     $placeholders = implode(',', array_fill(0, count($dates), '?'));
 
