@@ -70,8 +70,8 @@ try {
         $isoWeek = $maxDate->format('W');
         $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
     }
-    $minWeekValue = '2020-W01';
-    $maxWeekValue = (new DateTime())->format('o-\WW');
+    $minWeekValue = '2021-W01';
+    $maxWeekValue = '2023-W52';
 
     $datePlaceholders = [];
     foreach ($dates as $key => $date) {
