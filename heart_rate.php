@@ -99,7 +99,7 @@ try {
     }
 
     $minWeekValue = '2020-W01';
-    $maxWeekValue = (new DateTime())->format('o-\WW');
+    $maxWeekValue = '2023-W52';
 
 } catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
