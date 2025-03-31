@@ -118,7 +118,7 @@ try {
                    value="<?php echo htmlspecialchars($selectedWeekValue) ?>"
                    min="2020-W01" 
                    max="<?php echo $maxWeekValue ?>">
-            <button type="submit">Show</button>
+            <button type="submit">Update</button>
         </form>
 
         <div class="graph-video-container">
