@@ -143,10 +143,6 @@ try {
 <div class="graphcontainer">
     <main role="main" class="pb-5">
         <h2>Daily Temperature Range</h2>
-        <div class="color-legend">
-            <span class="cool-temp">Cool</span>
-            <span class="warm-temp">Warm</span>
-        </div>
 
         <form method="GET" class="week-form">
             <label for="week">Select Week:</label>
