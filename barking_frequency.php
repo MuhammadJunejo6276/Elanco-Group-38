@@ -68,7 +68,6 @@ try {
             $date->modify("-$i days");
             $dates[] = $date->format('d-m-Y');
         }
-        // Set default week value
         $isoYear = $maxDate->format('o');
         $isoWeek = $maxDate->format('W');
         $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
