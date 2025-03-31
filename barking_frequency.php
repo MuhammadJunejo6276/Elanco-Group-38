@@ -72,7 +72,7 @@ try {
     }
 
     $minWeekValue = '2020-W01';
-    $maxWeekValue = (new DateTime())->format('o-\WW');
+    $maxWeekValue = '2023-W52';
 
     $datePlaceholders = [];
     foreach ($dates as $key => $date) {
@@ -130,7 +130,7 @@ try {
                    value="<?php echo htmlspecialchars($selectedWeekValue) ?>"
                    min="2020-W01" 
                    max="<?php echo $maxWeekValue ?>">
-            <button type="submit">Show</button>
+            <button type="submit">Update</button>
         </form>
 
         <div class="graph-video-container">
