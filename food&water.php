@@ -40,13 +40,42 @@ try {
     }
 
     $maxDate = max($dateTimes);
+    $minDate = min($dateTimes);
 
-    $dates = [];
-    for ($i = 6; $i >= 0; $i--) {
-        $date = clone $maxDate;
-        $date->modify("-$i days");
-        $dates[] = $date->format('d-m-Y');
+    // Handle week selection
+    if (isset($_GET['week']) && !empty($_GET['week'])) {
+        try {
+            $selectedWeek = $_GET['week'];
+            $weekStart = new DateTime($selectedWeek);
+            $weekStart->modify('monday this week');
+            
+            $dates = [];
+            for ($i = 0; $i < 7; $i++) {
+                $currentDate = clone $weekStart;
+                $currentDate->modify("+$i days");
+                $dates[] = $currentDate->format('d-m-Y');
+            }
+            $selectedWeekValue = $selectedWeek;
+        } catch (Exception $e) {
+            die("Invalid week selected");
+        }
+    } else {
+        // Default to latest week
+        $dates = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = clone $maxDate;
+            $date->modify("-$i days");
+            $dates[] = $date->format('d-m-Y');
+        }
+        // Set default week value
+        $isoYear = $maxDate->format('o');
+        $isoWeek = $maxDate->format('W');
+        $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
     }
+
+    // Calculate week range
+    $minWeekValue = '2020-W01';
+    $maxWeekValue = (new DateTime())->format('o-\WW');
 
     $datePlaceholders = [];
     foreach ($dates as $key => $date) {
@@ -96,17 +125,25 @@ try {
 <body>
 <?php include 'header.php'?>
 
-
     <div class="graphcontainer">
         <main role="main" class="pb-5">
             <h2>Food and Water Intake Per Day</h2>
+            <!-- Week selection form -->
+            <form method="GET" class="week-form">
+                <label for="week">Select Week:</label>
+                <input type="week" id="week" name="week" 
+                       value="<?php echo htmlspecialchars($selectedWeekValue) ?>"
+                       min="2020-W01" 
+                       max="<?php echo $maxWeekValue ?>">
+                <button type="submit">Show</button>
+            </form>
+            
             <div class="col-md-12">
                 <canvas id="myChart"></canvas>
             </div>
 
             <script>
                 const ctx = document.getElementById('myChart').getContext('2d');
-
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
