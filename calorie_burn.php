@@ -187,6 +187,5 @@ try {
 </div>
 <?php include 'footer.php'?>
 
-<!-- Existing JavaScript remains unchanged -->
 </body>
 </html>
