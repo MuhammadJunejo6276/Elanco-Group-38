@@ -193,6 +193,6 @@ try {
                 dropdown.style.display = "none";
             }
         });
-    </script>
+</script>
 </body>
 </html>
