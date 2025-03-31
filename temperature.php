@@ -221,19 +221,5 @@ try {
 </div>
 
 <?php include 'footer.php'?>
-<script>
-    function toggleDropdown() {
-        const dropdown = document.getElementById("profileDropdown");
-        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-    }
-    
-    document.addEventListener("click", function(event) {
-        const profileContainer = document.querySelector(".profile-container");
-        const dropdown = document.getElementById("profileDropdown");
-        if (!profileContainer.contains(event.target)) {
-            dropdown.style.display = "none";
-        }
-    });
-</script>
 </body>
 </html>
