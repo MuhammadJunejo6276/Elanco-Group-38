@@ -17,7 +17,7 @@ try {
     if (!$petData) {
         throw new Exception("No pets found for this user");
     }
-    $petID = $petData['PetID'];
+    $petID = trim($petData['PetID']);
 
     $stmt = $conn->prepare("SELECT DISTINCT Date FROM Pet_Activity WHERE PetID = :petID");
     $stmt->bindParam(':petID', $petID);
@@ -43,65 +43,28 @@ try {
     $maxDate = max($dateTimes);
     $minDate = min($dateTimes);
 
- include 'week_selection.php';
+    include 'day_selection.php';
 
-    $selectedWeek = $_GET['week'] ?? null;
+    $selectedDay = $_GET['day'] ?? null;
+    $daySelection = getSelectedDay($maxDate, $minDate, $selectedDay);
 
-    $weekSelection = getSelectedWeekDates($maxDate, $minDate, $selectedWeek);
+    $date = $daySelection['date']; 
+    $selectedDayValue = $daySelection['selectedDayValue']; 
 
-    $dates = $weekSelection['dates'];
-    $selectedWeekValue = $weekSelection['selectedWeekValue'];
-
-    $minWeekValue = $minDate->format('o-\WW');
-    $maxWeekValue = $maxDate->format('o-\WW');
-
-    $datePlaceholders = [];
-    foreach ($dates as $key => $date) {
-        $datePlaceholders[] = ":date$key";
-    }
-    $placeholders = implode(',', $datePlaceholders);
-
-    $sql = $conn->prepare("SELECT Date, 
-                          MIN(`Temperature (C)`) as MinTemp,
-                          MAX(`Temperature (C)`) as MaxTemp,
-                          AVG(`Temperature (C)`) as AvgTemp 
+    $sql = $conn->prepare("SELECT Hour, [Temperature (C)] as Temp
                           FROM Pet_Activity 
-                          WHERE Date IN ($placeholders)
-                          AND PetID = :petID 
-                          GROUP BY Date");
+                          WHERE Date = :selectedDate
+                          AND PetID = :petID COLLATE NOCASE
+                          ORDER BY Hour");
 
-    foreach ($dates as $key => $date) {
-        $sql->bindValue(":date$key", $date);
-    }
+    $sql->bindParam(':selectedDate', $date);
     $sql->bindParam(':petID', $petID);
     $sql->execute();
 
-    $tempData = array_fill(0, count($dates), ['Min' => 0, 'Max' => 0, 'Avg' => 0]);
-    $averages = [];
-    
+    $tempData = array_fill(0, 24, 0);
     while ($data = $sql->fetch(PDO::FETCH_ASSOC)) {
-        $index = array_search($data['Date'], $dates);
-        if ($index !== false) {
-            $tempData[$index] = [
-                'Min' => (float)$data['MinTemp'],
-                'Max' => (float)$data['MaxTemp'],
-                'Avg' => (float)$data['AvgTemp']
-            ];
-            $averages[] = (float)$data['AvgTemp'];
-        }
-    }
-
-    $minAvg = min($averages);
-    $maxAvg = max($averages);
-    $range = $maxAvg - $minAvg ?: 1;
-
-    $backgroundColors = [];
-    foreach ($averages as $avg) {
-        $ratio = ($avg - $minAvg) / $range;
-        $red = (int)(30 + (225 * $ratio));
-        $green = (int)(144 - (44 * $ratio));
-        $blue = (int)(255 - (255 * $ratio));
-        $backgroundColors[] = "rgba($red, $green, $blue, 0.7)";
+        $hour = (int)$data['Hour'];
+        $tempData[$hour] = (float)$data['Temp'];
     }
 
 } catch (PDOException | Exception $e) {
@@ -114,93 +77,93 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temperature Range</title>
+    <title>Temperature</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<?php include 'header.php'?>
+    <?php include 'header.php' ?>
 
-<div class="graphcontainer">
-    <main role="main" class="pb-5">
-        <h2>Daily Temperature Range</h2>
+    <div class="graphcontainer">
+        <main role="main" class="pb-5">
+            <h2>Hourly Temperature for <?php echo $selectedDayValue; ?></h2>
 
-        <form method="GET" class="week-form">
-            <label for="week">Select Week:</label>
-            <input type="week" id="week" name="week" 
-                   value="<?php echo htmlspecialchars($selectedWeekValue) ?>"
-                   min="2020-W01" 
-                   max="<?php echo $maxWeekValue ?>">
-            <button type="submit">Update</button>
-        </form>
+            <form method="GET" style="margin-bottom: 20px;">
+                <label for="day">Select Day:</label>
+                <input type="date" id="day" name="day" 
+                       value="<?php echo htmlspecialchars(DateTime::createFromFormat('d-m-Y', $selectedDayValue)->format('Y-m-d')); ?>" 
+                       min="<?php echo $minDate->format('Y-m-d'); ?>" 
+                       max="<?php echo $maxDate->format('Y-m-d'); ?>">
+                <button type="submit">Update</button>
+            </form>
 
-        <div class="graph-video-container">
-            <div class="graph-container">
-                <canvas id="tempChart"></canvas>
+            <div class="graph-video-container">
+                <div class="graph-container">
+                    <canvas id="myChart"></canvas>
+                </div>
             </div>
-        </div>
 
-        <script>
-            const ctx = document.getElementById('tempChart').getContext('2d');
-            const averages = <?php echo json_encode($averages); ?>;
-            
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: <?php echo json_encode($dates); ?>,
-                    datasets: [{
-                        label: 'Temperature Range (°C)',
-                        data: <?php echo json_encode(array_map(fn($t) => [$t['Min'], $t['Max']], $tempData)); ?>,
-                        backgroundColor: <?php echo json_encode($backgroundColors); ?>,
-                        borderColor: '#333',
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    scales: {
-                        x: {
-                            title: { 
-                                display: true, 
-                                text: 'Temperature (°C)'
-                            },
-                            grid: { color: '#f0f0f0' }
-                        },
-                        y: {
-                            title: { 
-                                display: true, 
-                                text: 'Date'
-                            },
-                            grid: { display: false }
-                        }
+            <script>
+                const ctx = document.getElementById('myChart').getContext('2d');
+                const temperatures = <?php echo json_encode(array_values($tempData)); ?>;
+
+                const minTemp = Math.min(...temperatures);
+                const maxTemp = Math.max(...temperatures);
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, 500);
+                gradient.addColorStop(0, 'red');
+                gradient.addColorStop(1, 'blue');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+                        datasets: [{
+                            label: 'Temperature (°C)',
+                            data: temperatures,
+                            borderColor: gradient,
+                            backgroundColor: 'rgba(0,0,0,0)',
+                            tension: 0.4,
+                            pointBackgroundColor: temperatures.map(temp => {
+                                return temp > 39.4 ? 'yellow' : 'rgba(0, 0, 0, 0)'; 
+                            }),
+                            pointBorderColor: '#000000',
+                            pointRadius: 5,
+                            pointHoverRadius: 7, 
+                        }]
                     },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                title: (context) => context[0].label,
-                                label: (context) => {
-                                    const [min, max] = context.raw;
-                                    const avg = averages[context.dataIndex].toFixed(1);
-                                    return [
-                                        `Minimum: ${min}°C`,
-                                        `Maximum: ${max}°C`,
-                                        `Average: ${avg}°C`
-                                    ];
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Hour' },
+                                grid: { display: false }
+                            },
+                            y: {
+                                beginAtZero: false,
+                                title: { display: true, text: 'Temperature (°C)' },
+                                grid: { color: '#f0f0f0' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true, position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const temp = context.raw;
+                                        const warning = temp > 39.4 ? ' Warning: Your dog may have a fever' : '';
+                                        return `Temperature: ${temp}°C\n${warning}`;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
-        </script>
-    </main>
-</div>
+                });
+            </script>
+        </main>
+    </div>
 
-<?php include 'footer.php'?>
+    <?php include 'footer.php' ?>
 </body>
 </html>
