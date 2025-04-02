@@ -42,34 +42,18 @@ try {
     $maxDate = max($dateTimes);
     $minDate = min($dateTimes);
 
-    if (isset($_GET['week']) && !empty($_GET['week'])) {
-        try {
-            $selectedWeek = $_GET['week'];
-            $weekStart = new DateTime($selectedWeek);
-            $weekStart->modify('monday this week');
-            
-            $dates = [];
-            for ($i = 0; $i < 7; $i++) {
-                $currentDate = clone $weekStart;
-                $currentDate->modify("+$i days");
-                $dates[] = $currentDate->format('d-m-Y');
-            }
-            $selectedWeekValue = $selectedWeek;
-        } catch (Exception $e) {
-            die("Invalid week selected");
-        }
-    } else {
-        $dates = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = clone $maxDate;
-            $date->modify("-$i days");
-            $dates[] = $date->format('d-m-Y');
-        }
-        $isoYear = $maxDate->format('o');
-        $isoWeek = $maxDate->format('W');
-        $selectedWeekValue = sprintf("%s-W%02d", $isoYear, $isoWeek);
-    }
+    include 'week_selection.php';
 
+    $selectedWeek = $_GET['week'] ?? null;
+
+    $weekSelection = getSelectedWeekDates($maxDate, $minDate, $selectedWeek);
+
+    $dates = $weekSelection['dates'];
+    $selectedWeekValue = $weekSelection['selectedWeekValue'];
+
+    $minWeekValue = $minDate->format('o-\WW');
+    $maxWeekValue = $maxDate->format('o-\WW');
+    
     $datePlaceholders = [];
     foreach ($dates as $key => $date) {
         $datePlaceholders[] = ":date$key";
