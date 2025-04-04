@@ -86,7 +86,7 @@ try {
 
     <div class="graphcontainer">
         <main role="main" class="pb-5">
-            <h2>Hourly Temperature for <?php echo $selectedDayValue; ?></h2>
+            <h2>Hourly Temperature </h2>
 
             <form method="GET" style="margin-bottom: 20px;">
                 <label for="day">Select Day:</label>
